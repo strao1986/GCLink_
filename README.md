@@ -15,7 +15,7 @@ The pipeline can be readily adapted to investigate the genetic relationships bet
 Before running GCLink, all GWAS summary statistics should be harmonized into the following format: chr (Chromosome number), pos (Genomic position), rsid (SNP identifier), A1 (Effect allele), A2 (Reference allele), beta (Effect size), se (Standard error), p (P-value), eaf (Effect allele frequency), N (Sample size).
 
 ## Data Resources
-Preprocessed GWAS summary statistics in this study and reference panels used by GCLink are available through Google Drive: https://drive.google.com/drive/my-drive?dmr=1&ec=wgc-drive-%5Bmodule%5D-goto
+Preprocessed GWAS summary statistics in this study and reference panels used by GCLink are available through Google Drive: https://drive.google.com/drive/my-drive?dmr=1&ec=wgc-drive-%5Bmodule%5D-goto.
 
 ## Citation
 If you use GCLink in your research, please cite:
