@@ -1,0 +1,58 @@
+#!/bin/bash
+#PBS -S /bin/bash
+#PBS -N visualize
+#PBS -l nodes=cu04:ppn=8
+#PBS -e visualize.err
+#PBS -o visualize.log
+#PBS -q batch
+#PBS -V
+
+export OMP_NUM_THREADS=8
+export OPENBLAS_NUM_THREADS=8
+export MKL_NUM_THREADS=8
+export VECLIB_MAXIMUM_THREADS=8
+export NUMEXPR_NUM_THREADS=8
+
+source /public/jiangjw/miniconda3/bin/activate poly_genic_overlap
+
+result_dir='/public/jiangjw/02.anxiety_ADs_EUR/12.polygenic_overlap_SWB_psyiatry20231228/01.MiXeR/Github_code_test'
+run_dir='/public/jiangjw/02.anxiety_ADs_EUR/12.polygenic_overlap_SWB_psyiatry20231228/01.MiXeR/mixer/src/build/precimed'
+
+#### univariate results visualization ####
+phenos=("Anxiety2021" "DiagnosedAR")
+
+for i in ${phenos[@]}
+do
+	python3.7 ${run_dir}/mixer_figures.py combine \
+	--json ${result_dir}/${i}_qc_noMHC.fit.rep1.json \
+	--out ${result_dir}/${i}_qc_noMHC.fit.rep1.combine
+
+	python3.7 ${run_dir}/mixer_figures.py one \
+	--json ${result_dir}/${i}_qc_noMHC.fit.rep1.combine.json \
+	--out ${result_dir}/${i}_qc_noMHC.fit.rep1.visualization \
+	--statistic mean std
+done
+
+#### bivariate results visualization ####
+pheno1="Anxiety2021"
+pheno2="DiagnosedAR"
+
+for i in ${pheno1[@]}
+do
+	for j in ${pheno2[@]}
+	do
+		python3.7 ${run_dir}/mixer_figures.py combine \
+		--json ${result_dir}/${i}_qc_noMHC_vs_${j}_qc_noMHC.fit.rep1.json \
+		--out ${result_dir}/${i}_qc_noMHC_vs_${j}_qc_noMHC.fit.combine
+
+		python3.7 ${run_dir}/mixer_figures.py combine \
+		--json ${result_dir}/${i}_qc_noMHC_vs_${j}_qc_noMHC.test.rep1.json \
+                --out ${result_dir}/${i}_qc_noMHC_vs_${j}_qc_noMHC.test.combine
+
+		python3.7 ${run_dir}/mixer_figures.py two \
+		--json-fit ${result_dir}/${i}_qc_noMHC_vs_${j}_qc_noMHC.fit.combine.json \
+		--json-test ${result_dir}/${i}_qc_noMHC_vs_${j}_qc_noMHC.test.combine.json \
+		--out ${result_dir}/${i}_qc_noMHC_vs_${j}_qc_noMHC.visualization \
+		--statistic mean std
+	done
+done

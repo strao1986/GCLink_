@@ -1,0 +1,104 @@
+#!/bin/bash
+#PBS -S /bin/bash
+#PBS -N mixer
+#PBS -l nodes=cu04:ppn=12
+#PBS -e mixer.err
+#PBS -o mixer.log
+#PBS -q batch
+#PBS -V
+
+export OMP_NUM_THREADS=12
+export OPENBLAS_NUM_THREADS=12
+export MKL_NUM_THREADS=12
+export VECLIB_MAXIMUM_THREADS=12
+export NUMEXPR_NUM_THREADS=12
+
+source /public/jiangjw/miniconda3/bin/activate poly_genic_overlap
+
+run_dir='/public/jiangjw/02.anxiety_ADs_EUR/12.polygenic_overlap_SWB_psyiatry20231228/01.MiXeR/python_convert-master' #modify into your path
+GWAS_sumstats_dir='/public/jiangjw/GWAS_sumstats/EUR' #modify into your path
+result_dir='/public/jiangjw/02.anxiety_ADs_EUR/12.polygenic_overlap_SWB_psyiatry20231228/01.MiXeR/Github_code_test' #modify into your path
+
+phenos=("Anxiety2021" "DiagnosedAR")
+#### Munge Data ####
+for i in ${phenos[@]}
+do
+        python3.7 ${run_dir}/sumstats.py csv \
+        --sumstats ${GWAS_sumstats_dir}/${i}.clean.txt \
+        --out ${result_dir}/${i}.clean.csv \
+        --force --auto --n N
+done
+
+for i in ${phenos[@]}
+do
+	python3.7 ${run_dir}/sumstats.py zscore --sumstats ${result_dir}/${i}.clean.csv | \
+	python3.7 ${run_dir}/sumstats.py qc --exclude-ranges 6:26000000-34000000 --max-or 1e37 | \
+	python3.7 ${run_dir}/sumstats.py neff --drop --factor 4 --out ${result_dir}/${i}_qc_noMHC.clean.csv --force
+	gzip ${result_dir}/${i}_qc_noMHC.clean.csv
+done
+
+#### Univariate analysis ####
+mixer_run_dir='/public/jiangjw/02.anxiety_ADs_EUR/12.polygenic_overlap_SWB_psyiatry20231228/01.MiXeR/mixer/src/build/precimed' #modify into your path
+reference_dir='/public/jiangjw/02.anxiety_ADs_EUR/12.polygenic_overlap_SWB_psyiatry20231228/01.MiXeR/reference' #modify into your path
+lib_dir='/public/jiangjw/02.anxiety_ADs_EUR/12.polygenic_overlap_SWB_psyiatry20231228/01.MiXeR/mixer/src/build/lib' #modify into your path
+
+### fit the model ###
+for i in ${phenos[@]}
+do
+	python3.7 ${mixer_run_dir}/mixer.py fit1 \
+	--trait1-file ${result_dir}/${i}_qc_noMHC.clean.csv.gz \
+	--out ${result_dir}/${i}_qc_noMHC.fit.rep1 \
+	--bim-file ${reference_dir}/1000G.EUR.QC.@.bim \
+	--ld-file ${reference_dir}/1000G.EUR.QC.@.run4.ld \
+	--lib ${lib_dir}/libbgmg.so
+done
+
+### apply the model to the entire set of SNPs(test model) ###
+for k in ${phenos[@]}
+do
+	python3.7 ${mixer_run_dir}/mixer.py test1 \
+      	--trait1-file ${result_dir}/${k}_qc_noMHC.clean.csv.gz \
+      	--load-params-file ${result_dir}/$[k]_qc_noMHC.fit.rep1.json \
+      	--out ${result_dir}/${k}_qc_noMHC.test.rep1 \
+      	--bim-file ${reference_dir}/1000G.EUR.QC.@.bim \
+      	--ld-file ${reference_dir}/1000G.EUR.QC.@.run4.ld \
+      	--lib ${lib_dir}/libbgmg.so
+done
+
+#### Bivariate (cross-trait) analysis ####
+pheno1="Anxiety2021"
+pheno2="DiagnosedAR"
+
+### Fit the model ###
+for i in ${pheno1[@]}
+do
+	for j in ${pheno2[@]}
+	do
+		python3.7 ${mixer_run_dir}/mixer.py fit2 \
+      		--trait1-file ${result_dir}/${i}_qc_noMHC.clean.csv.gz \
+      		--trait2-file ${result_dir}/${j}_qc_noMHC.clean.csv.gz \
+      		--trait1-params-file ${result_dir}/${i}_qc_noMHC.fit.rep1.json \
+      		--trait2-params-file ${result_dir}/${j}_qc_noMHC.fit.rep1.json \
+      		--out ${result_dir}/${i}_qc_noMHC_vs_${j}_qc_noMHC.fit.rep1 \
+      		--bim-file ${reference_dir}/1000G.EUR.QC.@.bim \
+      		--ld-file ${reference_dir}/1000G.EUR.QC.@.run4.ld \
+      		--lib ${lib_dir}/libbgmg.so
+	done
+done
+
+### apply the model to the entire set of SNPs(test model) ###
+for k in ${pheno1[@]}
+do
+        for l in ${pheno2[@]}
+        do
+                python3.7 ${mixer_run_dir}/mixer.py test2 \
+                --trait1-file ${result_dir}/${k}_qc_noMHC.clean.csv.gz \
+                --trait2-file ${result_dir}/${l}_qc_noMHC.clean.csv.gz \
+  		--load-params-file ${result_dir}/${k}_qc_noMHC_vs_${l}_qc_noMHC.fit.rep1.json \
+                --out ${result_dir}/${k}_qc_noMHC_vs_${l}_qc_noMHC.test.rep1 \
+                --bim-file ${reference_dir}/1000G.EUR.QC.@.bim \
+                --ld-file ${reference_dir}/1000G.EUR.QC.@.run4.ld \
+                --lib ${lib_dir}/libbgmg.so
+        done
+done
+

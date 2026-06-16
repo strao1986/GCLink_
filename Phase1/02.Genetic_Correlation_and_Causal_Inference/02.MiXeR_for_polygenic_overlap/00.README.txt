@@ -1,0 +1,2 @@
+These scripts running based on Python 3.7 conda environment named poly_genic_overlap
+Tutorials from https://github.com/precimed/mixer

@@ -1,0 +1,2 @@
+Before running these scripts, you must download SMR program from https://yanglab.westlake.edu.cn/software/smr/#Download
+Tissue-specific bulk eQTL SMR-format files can be downloaded from https://yanglab.westlake.edu.cn/software/smr/#DataResource

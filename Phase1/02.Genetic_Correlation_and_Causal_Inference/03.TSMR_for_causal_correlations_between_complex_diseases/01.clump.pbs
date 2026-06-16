@@ -1,0 +1,33 @@
+#/bin/bash
+#PBS -N clump_F10
+#PBS -l nodes=cu04:ppn=3
+#PBS -e clump_F10.err
+#PBS -o clump_F10.log
+#PBS -q batch
+#PBS -V
+
+run_plink_dir="/public/jiangjw/plink" #modify into your path
+ref_file="/public/jiangjw/reference/g1000_eur"  #modify into your path
+GWAS_sumstats_dir="/public/jiangjw/GWAS_sumstats/EUR" #modify into your path
+result_dir='/public/jiangjw/02.anxiety_ADs_EUR/01.MR/Github_code_test' #modify into your path
+
+p1="1"
+p2="1"
+r2="0.1"
+kb="1000"
+
+phenos=("Anxiety2021" "DiagnosedAR")
+
+for i in ${phenos[@]}; do
+	${run_plink_dir}/plink \
+		--bfile ${ref_file}/g1000_eur \
+		--clump-snp-field rsid \
+		--clump-field p \
+		--clump-p1 ${p1} \
+		--clump-p2 ${p2} \
+		--clump-r2 ${r2} \
+		--clump-kb ${kb} \
+		--clump ${GWAS_sumstats_dir}/${i}.clean.txt \
+		--out ${result_dir}/${i}.LD_result
+done
+
