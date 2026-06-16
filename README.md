@@ -5,16 +5,9 @@ GCLink is an integrated analytical pipeline designed to uncover the genetic caus
 Understanding whether two complex diseases are causally related and identifying the molecular mechanisms underlying their comorbidity remain major challenges in human genetics.
 GCLink addresses these challenges through a two-phase analytical framework:
 ### Phase 1: Observational Studies and Genetic Causal Inferences
-(1) Observational studies
-(2) Genetic correlation analyses
-(3) Bidirectional Mendelian Randomization (MR)
+(1) Observational studies; (2) Genetic correlation analyses; (3) Bidirectional Mendelian Randomization (MR).
 ### Phase 2: Molecular Mechanisms Underlying Genetic Correlations
-(1) Significant mediators
-(2) Shared genetic variants
-(3) Tissue enrichment
-(4) Shared functional genes
-(5) Specific cell types
-(6) Perturbed pathways
+(1) Significant mediators; (2) Shared genetic variants; (3) Tissue enrichment; (4) Shared functional genes; (5) Specific cell types; (6) Perturbed pathways.
 The pipeline can be readily adapted to investigate the genetic relationships between any pair of complex diseases with available GWAS summary statistics.
 
 ## Data Preparation
