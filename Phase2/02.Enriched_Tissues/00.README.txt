@@ -1,0 +1,1 @@
+Before running these scripts, you must download executable scripts from https://github.com/bulik/ldsc

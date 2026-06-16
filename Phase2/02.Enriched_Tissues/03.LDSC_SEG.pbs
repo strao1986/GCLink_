@@ -1,0 +1,37 @@
+#!/bin/bash
+#PBS -S /bin/bash
+#PBS -N LDSC_SEG
+#PBS -l nodes=cu04:ppn=8
+#PBS -e LDSC_SEG.err
+#PBS -o LDSC_SEG.log
+#PBS -q batch
+#PBS -V
+
+export OMP_NUM_THREADS=8
+export OPENBLAS_NUM_THREADS=8
+export MKL_NUM_THREADS=8
+export VECLIB_MAXIMUM_THREADS=8
+export NUMEXPR_NUM_THREADS=8
+
+source ~/miniconda3/bin/activate ldsc
+
+MungeGWAS_sumstats_dir='/public/jiangjw/02.anxiety_ADs_EUR/02.LDSC' #modify into your path
+run_dir='/public/jiangjw/02.anxiety_ADs_EUR/02.LDSC/ldsc-master' #modify into your path
+result_dir='/public/jiangjw/02.anxiety_ADs_EUR/02.LDSC/LDSC_SEG/Github_code_test' #modify into your path
+baseline_model_dir='/public/jiangjw/reference/LDSC_SEG_annotation_geneset/1000G_EUR_Phase3_baseline' #modify into your path
+multitissue_geneset_dir='/public/jiangjw/02.anxiety_ADs_EUR/02.LDSC/LDSC_SEG/Github_code_test' #modify into your path
+weight_dir='/public/jiangjw/reference/LDSC_SEG_annotation_geneset/weights_hm3_no_hla' #modify into your path
+
+phenos=("Anxiety2021" "DiagnosedAR")
+
+#### LDSC_SEG ####
+for i in ${phenos[@]};
+do
+	python ${run_dir}/ldsc.py \
+	--h2-cts ${MungeGWAS_sumstats_dir}/${i}.sumstats.gz \
+	--ref-ld-chr ${baseline_model_dir}/baseline. \
+	--out ${result_dir}/${i}_multitissue_gene_expr \
+	--ref-ld-chr-cts ${multitissue_geneset_dir}/Multi_tissue_gene_expr.ldcts \
+	--w-ld-chr ${weight_dir}/weights.
+done
+

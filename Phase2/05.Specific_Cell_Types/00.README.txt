@@ -1,0 +1,3 @@
+Before running these scripts, you should dowload MAGMA program from https://cncr.nl/research/magma/
+MAGMA.Celltyping celltype enrichments tutorials come from https://github.com/neurogenomics/MAGMA_Celltyping
+CellTypeDataset establishing tutorials come from https://nathanskene.github.io/EWCE/articles/extended.html#create-a-celltypedataset
